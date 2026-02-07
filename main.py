@@ -4,6 +4,7 @@ import asyncio
 import time
 from datetime import datetime
 from typing import Dict, List, Any, Tuple
+import ast
 
 import requests
 from dotenv import load_dotenv
@@ -75,6 +76,7 @@ class BifrostAPIError(Exception):
 # ==========================
 # 🌐 CONSUMIR API
 # ==========================
+
 def obtener_nodos() -> List[Dict[str, Any]]:
     try:
         r = requests.get(
@@ -89,24 +91,17 @@ def obtener_nodos() -> List[Dict[str, Any]]:
         if r.status_code != 200:
             raise BifrostAPIError(f"Respuesta inesperada: {r.status_code}")
 
-        ##payload = r.json()
-        payload = r.text
+        payload = r.json()  # 👈 aquí está la clave
 
-        try:
-            my_dict = ast.literal_eval(payload)
-        except ValueError as e:
-            print(f"Error evaluating literal: {e}")
-
-        data = my_dict["results"]
+        data = payload.get("results")
 
         if not isinstance(data, list):
-            raise BifrostAPIError("El payload no es una lista")
+            raise BifrostAPIError("El payload no contiene una lista en 'results'")
 
         return data
 
-    except Exception as e:
-        error_logger.error(f"Error al obtener nodos: {e}", exc_info=True)
-        raise
+    except requests.exceptions.RequestException as e:
+        raise BifrostAPIError(f"Error de conexión con SolarWinds: {e}")
 
 # ==========================
 # 🧱 UTIL
