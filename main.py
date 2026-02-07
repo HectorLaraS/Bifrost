@@ -81,6 +81,7 @@ def obtener_nodos() -> List[Dict[str, Any]]:
             API_URL,
             auth=(API_USER, API_PASS),
             timeout=TIMEOUT_SECONDS,
+            verify=False
         )
 
         if r.status_code == 401:
@@ -88,7 +89,16 @@ def obtener_nodos() -> List[Dict[str, Any]]:
         if r.status_code != 200:
             raise BifrostAPIError(f"Respuesta inesperada: {r.status_code}")
 
-        data = r.json()
+        ##payload = r.json()
+        payload = r.text
+
+        try:
+            my_dict = ast.literal_eval(payload)
+        except ValueError as e:
+            print(f"Error evaluating literal: {e}")
+
+        data = my_dict["results"]
+
         if not isinstance(data, list):
             raise BifrostAPIError("El payload no es una lista")
 
@@ -97,7 +107,6 @@ def obtener_nodos() -> List[Dict[str, Any]]:
     except Exception as e:
         error_logger.error(f"Error al obtener nodos: {e}", exc_info=True)
         raise
-
 
 # ==========================
 # 🧱 UTIL
