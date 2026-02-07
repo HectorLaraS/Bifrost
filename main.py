@@ -145,9 +145,9 @@ def construir_varbinds(
 # ==========================
 # 📡 ENVIAR TRAP
 # ==========================
-async def enviar_trap(varbinds):
+async def enviar_trap(varbinds, target):
     target = await UdpTransportTarget.create(
-        (TRAP_RECEIVER_IP, TRAP_RECEIVER_PORT)
+        (target, TRAP_RECEIVER_PORT)
     )
 
     res = await send_notification_func(
@@ -195,7 +195,7 @@ async def main():
 
     for nodo in nodos:  # quita [:5] cuando quieras
         vb = construir_varbinds(nodo)
-        await enviar_trap(vb)
+        await enviar_trap(vb,TRAP_RECEIVER_IP)
         await asyncio.sleep(0.02)
 
     t_trap_end = time.perf_counter()
